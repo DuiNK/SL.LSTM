@@ -45,8 +45,10 @@ DATA_PATH = os.path.join('Data')
 
 # Actions that we try to detect
 #actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
-actions = np.array(['Z'])
-# Thirty videos worth of data
+#actions = np.array(['Z'])
+actions = np.aray(['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
+
+#  videos worth of data
 no_sequences = 10
 
 # Videos are going to be 30 frames in length

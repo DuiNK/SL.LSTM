@@ -66,21 +66,23 @@ label_map = {label:num for num, label in enumerate(actions)}
 
 
 
-model = load_model('action.h5')
+model = load_model('model.hdf5')
 # 1. New detection variables
 sequence = []
 sentence = []
 predictions = []
-threshold = 0.5
+threshold = 0.2
 
 cap = cv2.VideoCapture(0)
+
 # Set mediapipe model
-with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+
+with mp_holistic.Holistic(min_detection_confidence=0.7, min_tracking_confidence=0.3) as holistic:
     while cap.isOpened():
 
         # Read feed
         ret, frame = cap.read()
-        frame = cv2.flip(frame,1)
+        #frame = cv2.flip(frame,1)
         # Make detections
         image, results = mediapipe_detection(frame, holistic)
         print(results)

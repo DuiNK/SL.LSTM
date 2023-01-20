@@ -4,4 +4,4 @@ opencv-python
 sklearn
 matplotlib
 tensorflow
-sc
+scikit-learn
