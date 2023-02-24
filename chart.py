@@ -46,7 +46,8 @@ for action in actions:
 X = np.array(sequences)
 y = to_categorical(labels).astype(int)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
-
+y_test = np.argmax(y_test, axis=1)
+y_train = np.argmax(y_train, axis=1)
 def print_confusion_matrix(y_true, y_pred, report=True):
     labels = sorted(list(set(y_true)))
     cmx_data = confusion_matrix(y_true, y_pred, labels=labels)
@@ -60,31 +61,33 @@ def print_confusion_matrix(y_true, y_pred, report=True):
 
     if report:
         print('Classification Report')
-        print(classification_report(y_test, y_pred))
+        print(classification_report(y_true, y_pred))
 
 
 Y_pred = model.predict(X_test)
 y_pred = np.argmax(Y_pred, axis=1)
-
+Y_predt = model.predict(X_train)
+y_predt = np.argmax(Y_predt, axis =1)
 print_confusion_matrix(y_test, y_pred)
+print_confusion_matrix(y_train, y_predt)
 
-# 推論専用のモデルとして保存
-model.save(model_save_path, include_optimizer=False)
-
-# モデルを変換(量子化)
-tflite_save_path = 'model/keypoint_classifier/keypoint_classifier.tflite'
-
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-converter.optimizations = [tf.lite.Optimize.DEFAULT]
-tflite_quantized_model = converter.convert()
-
-open(tflite_save_path, 'wb').write(tflite_quantized_model)
-
-interpreter = tf.lite.Interpreter(model_path=tflite_save_path)
-interpreter.allocate_tensors()
-
-# 入出力テンソルを取得
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
-interpreter.set_tensor(input_details[0]['index'], np.array([X_test[0]]))
-
+# # 推論専用のモデルとして保存
+# model.save(model_save_path, include_optimizer=False)
+#
+# # モデルを変換(量子化)
+# tflite_save_path = 'model/keypoint_classifier/keypoint_classifier.tflite'
+#
+# converter = tf.lite.TFLiteConverter.from_keras_model(model)
+# converter.optimizations = [tf.lite.Optimize.DEFAULT]
+# tflite_quantized_model = converter.convert()
+#
+# open(tflite_save_path, 'wb').write(tflite_quantized_model)
+#
+# interpreter = tf.lite.Interpreter(model_path=tflite_save_path)
+# interpreter.allocate_tensors()
+#
+# # 入出力テンソルを取得
+# input_details = interpreter.get_input_details()
+# output_details = interpreter.get_output_details()
+# interpreter.set_tensor(input_details[0]['index'], np.array([X_test[0]]))
+#

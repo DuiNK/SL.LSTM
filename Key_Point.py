@@ -45,8 +45,8 @@ DATA_PATH = os.path.join('Data')
 
 # Actions that we try to detect
 #actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
-#actions = np.array(['Z'])
-actions = np.aray(['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
+actions = np.array(['A', 'B'])
+#actions = np.aray(['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
 
 #  videos worth of data
 no_sequences = 10
@@ -66,6 +66,7 @@ for action in actions:
             os.makedirs(os.path.join(DATA_PATH, action, str(dirmax+sequence)))
         except:
             pass
+            
 '''
 cap = cv2.VideoCapture(0)
 # Set mediapipe model
