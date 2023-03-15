@@ -45,20 +45,20 @@ DATA_PATH = os.path.join('Data')
 
 # Actions that we try to detect
 #actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
-actions = np.array(['A', 'B'])
+actions = np.array(['Q'])
 #actions = np.aray(['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
 
 #  videos worth of data
-no_sequences = 10
+no_sequences = 100
 
 # Videos are going to be 30 frames in length
 sequence_length = 30
 
 # Folder start
-start_folder = 60
+start_folder = 70
 
 #creat folder
-'''
+
 for action in actions:
     dirmax = np.max(np.array(os.listdir(os.path.join(DATA_PATH, action))).astype(int))
     for sequence in range(1,no_sequences+1):
@@ -66,8 +66,8 @@ for action in actions:
             os.makedirs(os.path.join(DATA_PATH, action, str(dirmax+sequence)))
         except:
             pass
-            
-'''
+
+
 cap = cv2.VideoCapture(0)
 # Set mediapipe model
 with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
