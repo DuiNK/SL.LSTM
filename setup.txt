@@ -1,6 +1,7 @@
 mediapipe
 pandas
 opencv-python
+python-opencv moviepy
 sklearn
 matplotlib
 tensorflow
