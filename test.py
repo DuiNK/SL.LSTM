@@ -108,6 +108,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.7, min_tracking_confidence=
         draw_styled_landmarks(image, results)
         cv2.imshow('OpenCV Feed', image)
 
+
         # 2. Prediction logic
 
         keypoints = extract_keypoints(results)
@@ -129,6 +130,8 @@ with mp_holistic.Holistic(min_detection_confidence=0.7, min_tracking_confidence=
             if len(sentences) > 10:
                 sentences = sentences[-10:]
             sequence = []
+            cv2.putText(image, 'STARTING COLLECTION', (120, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 4,
+                        cv2.LINE_AA)
 
         # Check predictions and sentences
         print("Predictions:", predictions)
