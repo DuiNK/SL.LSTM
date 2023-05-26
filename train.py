@@ -9,22 +9,22 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from tensorflow.keras.callbacks import TensorBoard
 from sklearn.metrics import multilabel_confusion_matrix, accuracy_score
-model_save_path = 'model.hdf5'
+model_save_path = 'modelABCDE.hdf5'
 # Path for exported data, numpy arrays
-DATA_PATH = os.path.join('Data')
+DATA_PATH = os.path.join('Data_v2')
 
 # Actions that we try to detect
-actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
-
+#actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
+actions = np.array(['A', 'B', 'C', 'D', 'E'])
 # Thirty videos worth of data
-no_sequences = 30
+no_sequences = 80
 
 # Videos are going to be 30 frames in length
-sequence_length = 30
+sequence_length = 80
 
 # Folder start
 start_folder = 30
-log_dir = os.path.join('Data')
+log_dir = os.path.join('Data_v2')
 tb_callback = TensorBoard(log_dir=log_dir)
 
 label_map = {label:num for num, label in enumerate(actions)}
@@ -40,14 +40,14 @@ for action in actions:
 
 X = np.array(sequences)
 y = to_categorical(labels).astype(int)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 model = Sequential()
-model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(30,126)))
-model.add(LSTM(128, return_sequences=True, activation='relu'))
-model.add(LSTM(64, return_sequences=False, activation='relu'))
-model.add(Dense(64, activation='relu'))
-model.add(Dense(32, activation='relu'))
+model.add(LSTM(64, return_sequences=True, activation='tanh', input_shape=(80, 258)))
+model.add(LSTM(128, return_sequences=True, activation='tanh'))
+model.add(LSTM(64, return_sequences=False, activation='tanh'))
+model.add(Dense(64, activation='tanh'))
+model.add(Dense(32, activation='tanh'))
 model.add(Dense(actions.shape[0], activation='softmax'))
 
 es_callback = tf.keras.callbacks.EarlyStopping(patience=100, verbose=1, monitor = 'categorical_accuracy')
@@ -58,7 +58,7 @@ model.fit(X_train, y_train, epochs=2000, batch_size=128, callbacks=[es_callback,
 
 # 保存したモデルのロード
 model.save('action.h5')
-del model
-model.load_weights('action.h5')
-
-#model = tf.keras.models.load_model(model_save_path)
+# del model
+# model.load_weights('action.h5')
+#
+# model = tf.keras.models.load_model(model_save_path)
