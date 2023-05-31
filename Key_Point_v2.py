@@ -62,17 +62,17 @@ DATA_PATH = os.path.join('Data_v2')
 #actions = np.array(['A', 'Ă', 'Â', 'B', 'C', 'D', 'Đ', 'E', 'Ê', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'Ô',
 #                    'Ơ', 'P', 'Q', 'R', 'S', 'T', 'U', 'Ư', 'V', 'W', 'X', 'Y', 'Z', 'dau sac', 'dau huyen', 'dau nga',
 #                    'dau hoi', 'dau nang', 'space', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
-actions = np.array(['Z'])
+actions = np.array(['E'])
 #actions = np.aray(['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
 
 #  videos worth of data
-no_sequences = 2
+no_sequences = 50
 
 # Videos are going to be 30 frames in length
 sequence_length = 80
 
 # Folder start
-start_folder = 20
+start_folder = 100
 
 #creat folder
 
@@ -84,13 +84,13 @@ for action in actions:
         except:
             pass
 #name output video
-output_file = "video/test.mp4"
+#output_file = "video/space.mp4"
 #dinh dang video, kich thuoc khung hinh, toc do khung hinh
 fourcc = cv2.VideoWriter_fourcc(*'MP4V')
 frame_size = (640, 480)
-fps = 30.0
+fps = 20.0
 #tao doi tuong VideoWriter
-out = cv2.VideoWriter(output_file, fourcc, fps, frame_size)
+#out = cv2.VideoWriter(output_file, fourcc, fps, frame_size)
 
 
 
@@ -108,7 +108,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
 
                 # Read feed
                 ret, frame = cap.read()
-                out.write(frame)
+                # out.write(frame)
 
                 # Make detections
                 image, results = mediapipe_detection(frame, holistic)
