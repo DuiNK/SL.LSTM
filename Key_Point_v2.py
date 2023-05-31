@@ -62,7 +62,7 @@ DATA_PATH = os.path.join('Data_v2')
 #actions = np.array(['A', 'Ă', 'Â', 'B', 'C', 'D', 'Đ', 'E', 'Ê', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'Ô',
 #                    'Ơ', 'P', 'Q', 'R', 'S', 'T', 'U', 'Ư', 'V', 'W', 'X', 'Y', 'Z', 'dau sac', 'dau huyen', 'dau nga',
 #                    'dau hoi', 'dau nang', 'space', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
-actions = np.array(['F'])
+actions = np.array(['G'])
 #actions = np.aray(['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
 
 #  videos worth of data
