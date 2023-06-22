@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import TensorBoard
 from sklearn.metrics import multilabel_confusion_matrix, accuracy_score
 model_save_path = 'modelABCDE.hdf5'
@@ -41,23 +41,27 @@ for action in actions:
 X = np.array(sequences)
 y = to_categorical(labels).astype(int)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
+#print(y_train[0:10])
+       
 model = Sequential()
-model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(80, 258)))
-model.add(LSTM(128, return_sequences=True, activation='relu'))
-model.add(LSTM(64, return_sequences=False, activation='relu'))
+model.add(LSTM(128, dropout=0.4, recurrent_dropout=0.4, return_sequences=False, activation='relu', input_shape=(80, 258)))
+# model.add(LSTM(128, return_sequences=True, activation='relu'))
+# model.add(LSTM(64, return_sequences=False, activation='relu'))
+#model.add(Dropout(0.4))
 model.add(Dense(64, activation='relu'))
+model.add(Dropout(0.5))
 model.add(Dense(32, activation='relu'))
+model.add(Dropout(0.5))
 model.add(Dense(actions.shape[0], activation='softmax'))
 
-es_callback = tf.keras.callbacks.EarlyStopping(patience=50, verbose=1, monitor = 'categorical_accuracy')
+es_callback = tf.keras.callbacks.EarlyStopping(patience=200, verbose=1, monitor = 'accuracy')
 cp_callback = tf.keras.callbacks.ModelCheckpoint(model_save_path, verbose=1, save_weights_only=False)
-model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
-
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+#model.load_weights("modelABCDE_0.9.hdf5")
 model.fit(X_train, y_train, epochs=2000, batch_size=128, callbacks=[es_callback, cp_callback] )
 
 # 保存したモデルのロード
-model.save('action_18h_7_6.h5')
+model.save('action_20h_8_6.h5')
 # del model
 # model.load_weights('action.h5')
 #
