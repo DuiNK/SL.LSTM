@@ -2,6 +2,11 @@ import cv2
 import numpy as np
 import os
 import mediapipe as mp
+import shutil
+from datetime import timedelta
+
+# i.e if video of duration 30 seconds, saves 10 frame per second = 300 frames saved in total
+SAVING_FRAMES_PER_SECOND = 10
 
 mp_holistic = mp.solutions.holistic # Holistic model
 mp_drawing = mp.solutions.drawing_utils # Drawing utilities
@@ -15,11 +20,18 @@ def mediapipe_detection(image, model):
     return image, results
 
 def draw_landmarks(image, results):
+    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)  # Draw pose connections
     mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS) # Draw left hand connections
     mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS) # Draw right hand connections
 
 def draw_styled_landmarks(image, results):
-   # Draw left hand connections
+
+    # Draw pose connections
+    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS,
+                              mp_drawing.DrawingSpec(color=(80, 22, 10), thickness=2, circle_radius=4),
+                              mp_drawing.DrawingSpec(color=(80, 44, 121), thickness=2, circle_radius=2)
+                              )
+    # Draw left hand connections
     mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
                              mp_drawing.DrawingSpec(color=(121,22,76), thickness=2, circle_radius=4),
                              mp_drawing.DrawingSpec(color=(121,44,250), thickness=2, circle_radius=2)
@@ -30,89 +42,141 @@ def draw_styled_landmarks(image, results):
                              mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2)
                              )
 
-
-
 # Set mediapipe model
-
-
 def extract_keypoints(results):
-    lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
-    rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
-    return np.concatenate([ lh, rh])
+    pose = np.array([[res.x, res.y, res.z, res.visibility] for res in
+                     results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(33 * 4)
 
+    lh = np.array([[res.x, res.y, res.z] for res in
+                   results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21 * 3)
+    rh = np.array([[res.x, res.y, res.z] for res in
+                   results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21 * 3)
+    return np.concatenate([pose, lh, rh])
 # Path for exported data, numpy arrays
-DATA_PATH = os.path.join('Data')
+DATA_PATH = os.path.join('data_raw/five')
 
 # Actions that we try to detect
-#actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
-actions = np.array(['Q'])
+#actions = np.array(['A', 'Ă', 'Â', 'B', 'C', 'D', 'Đ', 'E', 'Ê', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'Ô',
+#                    'Ơ', 'P', 'Q', 'R', 'S', 'T', 'U', 'Ư', 'V', 'W', 'X', 'Y', 'Z', 'dau sac', 'dau huyen', 'dau nga',
+#                    'dau hoi', 'dau nang', 'space', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+
 #actions = np.aray(['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])
 
 #  videos worth of data
-no_sequences = 100
+no_sequences = 1
 
 # Videos are going to be 30 frames in length
-sequence_length = 30
+sequence_length = 80
 
 # Folder start
-start_folder = 70
+start_folder = 350
 
 #creat folder
 
-for action in actions:
-    dirmax = np.max(np.array(os.listdir(os.path.join(DATA_PATH, action))).astype(int))
-    for sequence in range(1,no_sequences+1):
-        try:
-            os.makedirs(os.path.join(DATA_PATH, action, str(dirmax+sequence)))
-        except:
-            pass
+# for action in actions:
+#     dirmax = np.max(np.array(os.listdir(os.path.join(DATA_PATH, action))).astype(int))
+#     for sequence in range(1,no_sequences+1):
+#         try:
+#             os.makedirs(os.path.join(DATA_PATH, action, str(dirmax+sequence)))
+#         except:
+#             pass
+root_folder_path = 'data_raw/five'
+
+# Get a list of all items in the directory
+items = os.listdir(root_folder_path)
+
+# Initialize a counter for the number of directories
 
 
-cap = cv2.VideoCapture(0)
-# Set mediapipe model
+def count_max_folders(root_folder):
+    # Get a list of all files and directories in the directory
+    files_and_directories = os.listdir(root_folder)
+
+    # Filter out only the directories
+    directories = [f for f in files_and_directories if os.path.isdir(os.path.join(root_folder, f))]
+
+    # Count the number of directories
+    num_directories = len(directories)
+
+    return num_directories
+print(f'max_folder in path: {count_max_folders(DATA_PATH)}')
+
+data_key_path = 'data_keypoint'
+
+
+files = os.listdir(root_folder_path)
+# Set the start and end times (in seconds)
+
+# Create a dictionary to store files by their first 3 characters
+files_by_prefix = {}
 with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-    # NEW LOOP
-    # Loop through actions
-    for action in actions:
 
-        # Loop through sequences aka videos
-        for sequence in range(start_folder, start_folder +no_sequences):
-            # Loop through video length aka sequence length
-            for frame_num in range(sequence_length):
+    for file in files:
+        start_time = 0
+        end_time = 1
+        # Set the frame rate
+        frame_rate = 30
+        # Set the frame index
+        frame_index = 0
 
-                # Read feed
-                ret, frame = cap.read()
+        prefix = file[:3]
+        file_path = os.path.join(root_folder_path, file)
 
+        if not os.path.exists(os.path.join(data_key_path, prefix)):
+            os.makedirs(os.path.join(data_key_path, prefix))
+            print(f"Created directory at {os.path.join(data_key_path, prefix)}")
+            # else:
+            #     print(f"Directory already exists")
+
+        keypoint_path = os.path.join(data_key_path, prefix)
+        max_dir = count_max_folders(keypoint_path)
+        print(f'max_dỉ {max_dir}')
+
+        # Open the video file
+        cap = cv2.VideoCapture(file_path)
+        while True:
+            # Set the current time (in seconds)
+            current_time = frame_index / frame_rate
+
+            # Check if we've reached the end time
+            if current_time > end_time:
+                break
+
+            # Read the next frame
+            ret, frame = cap.read()
+
+            # Check if the frame was successfully read
+            if not ret:
+                break
+
+            # Check if we've reached the start time
+            if current_time >= start_time:
                 # Make detections
                 image, results = mediapipe_detection(frame, holistic)
-
-                # Draw landmarks
-                draw_styled_landmarks(image, results)
-
-                # NEW Apply wait logic
-                if frame_num == 0:
-                    cv2.putText(image, 'STARTING COLLECTION', (120, 200),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 4, cv2.LINE_AA)
-                    cv2.putText(image, 'Collecting frames for {} Video Number {}'.format(action, sequence), (15, 12),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
-                    # Show to screen
-                    cv2.imshow('OpenCV Feed', image)
-                    cv2.waitKey(500)
-                else:
-                    cv2.putText(image, 'Collecting frames for {} Video Number {}'.format(action, sequence), (15, 12),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
-                    # Show to screen
-                    cv2.imshow('OpenCV Feed', image)
-
                 # NEW Export keypoints
                 keypoints = extract_keypoints(results)
-                npy_path = os.path.join(DATA_PATH, action, str(sequence), str(frame_num))
+                print("keypoint", keypoints)
+                if not os.path.exists(os.path.join(data_key_path, prefix, str(max_dir))):
+                    os.makedirs(os.path.join(data_key_path, prefix, str(max_dir)))
+                    print(f"Created directory at {os.path.join(data_key_path, prefix, str(max_dir))}")
+                else:
+                    print(f"Directory already exists")
+
+                npy_path = os.path.join(data_key_path, prefix, str(max_dir), str(frame_index))
                 np.save(npy_path, keypoints)
 
-                # Break gracefully
-                if cv2.waitKey(10) & 0xFF == ord('q'):
-                    break
+            # Increment the frame index
+            frame_index += 1
 
-    cap.release()
-    cv2.destroyAllWindows()
+        # Release the video file
+        cap.release()
+
+
+# Create a folder for each prefix and move the files into the respective folder
+# for prefix, files in files_by_prefix.items():
+#     folder_path = os.path.join(root_folder_path, prefix)
+#     os.makedirs(folder_path, exist_ok=True)
+#     for file in files:
+#         file_path = os.path.join(root_folder_path, file)
+#         folder_file_path = os.path.join(folder_path, file)
 
