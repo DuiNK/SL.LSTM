@@ -62,15 +62,11 @@ def extract_keypoints(results):
 # DATA_PATH = os.path.join('Data_v2')
 
 # Actions that we try to detect
-# actions = np.array(['A', 'Ă', 'Â', 'B', 'C', 'D', 'Đ', 'E', 'Ê', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'Ô',
-#                    'Ơ', 'P', 'Q', 'R', 'S', 'T', 'U', 'Ư', 'V', 'W', 'X', 'Y', 'Z', 'dau sac', 'dau huyen', 'dau nga',
-#                    'dau hoi', 'dau nang', 'space'])
-
-actions = np.array(['001', '002', '003', '004', '005', '006', '007', '008', '009', '010', '011', '012', '013', '014',
-                    '015', '016', '017', '018', '019', '020', '021', '022', '023', '024', '025', '026', '027', '028',
-                    '029', '030', '031', '032', '033', '034', '035', '036', '037', '038', '039', '040', '041', '042',
-                    '043', '044', '045', '046', '047', '048', '049', '050', '051', '052', '053', '054', '055', '056',
-                    '057', '058', '059', '060', '061', '062', '063', '064'])
+actions = np.array(['am', 'red', 'green', 'yellow', 'bye', 'light-blue', 'silent', 'pet', 'women', 'i', 'you', 'man', 'go', 'punctuation',
+                    'born', 'learn', 'call', 'hello', 'bitter', 'sweet milk', 'milk', 'water', 'food', 'want', 'sorry', 'country', 'last name', 'where',
+                    'mock', 'birthday', 'breakfast', 'photo', 'hungry', 'map', 'coin', 'music', 'ship', 'none', 'name', 'patience', 'perfume', 'deaf',
+                    'trap', 'rice', 'barbecue', 'candy', 'chewing-gum', 'spaghetti', 'yogurt', 'accept', 'thanks', 'shut down', 'appear', 'to land', 'catch', 'help',
+                    'dance', 'bathe', 'buy', 'copy', 'run', 'realize', 'give', 'find'])
 # Thirty videos worth of data
 #no_sequences = 80
 
@@ -91,11 +87,13 @@ predictions = []
 threshold = 0.5
 
 cap = cv2.VideoCapture(0)
-start = 0
-# Set mediapipe model
+
+# Set time to calc FPS
 prev_frame_time = 0
 new_frame_time = 0
+
 with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.4) as holistic:
+    start = time.time()
     while cap.isOpened():
         start_time = time.monotonic()
         # Read feed
@@ -132,18 +130,20 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
             # print("sequence: ", sequence)
             # print("Input data shape:", input_data.shape)
             res = model.predict(input_data)[0]
-            # print("res:", res)
+            print("res:", np.argmax(res))
             # print("Predicted probabilities:", res)
             predicted_label = actions[np.argmax(res)]
             # print("Predicted label:", predicted_label)
             predictions.append(predicted_label)
             if res.max() > threshold:
                 sentences.append(predicted_label)
+            if np.argmax(res) == 13:
+                sentences = []
             if len(sentences) > 5:
                 sentences = sentences[-5:]
             sequence = []
 
-            cv2.putText(image, 'STARTING COLLECTION', (120, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 4,
+            cv2.putText(image, 'STARTING COLLECTION', (120, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1,
                         cv2.LINE_AA)
             # Tính thời gian tại thời điểm kết thúc thuật toán
             end_time = time.time()
@@ -153,31 +153,6 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
             print("predict_time:{0}".format(elapsed_time) + "[sec]")
             start = time.time()
 
-        # Check predictions and sentences
-
-        # if len(sequence) == 80:
-        #     res = model.predict(np.expand_dims(sequence, axis=0))[0] #bo [0]
-        #     print(res[np.argmax(res)])
-        #     print(len(res))
-        #     print(actions[np.argmax(res)])
-        #     sequence = []
-        #     cv2.putText(image, 'STARTING COLLECTION', (120, 200),
-        #                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 4, cv2.LINE_AA)
-        #     fps = cap.get(cv2.CAP_PROP_FPS)
-        #     print("Camera FPS:", fps)
-        #     predictions.append(np.argmax(res))
-        #
-        #     # 3. Viz logic
-        #     #if np.unique(predictions[-10:]) == np.argmax(res): #bo [0]
-        #
-        #     if res[np.argmax(res)] > threshold:
-        #             sentences.append(actions[np.argmax(res)])
-        #
-        #     if len(sentences) > 10:
-        #         sentences = sentences[-10:]
-
-            # Viz probabilities
-            # image = prob_viz(res, actions, image)
 
         cv2.rectangle(image, (0, 0), (640, 40), (245, 117, 16), -1)
         cv2.putText(image, ' '.join(sentences), (3, 30),
